@@ -8,20 +8,16 @@ const cors = require('cors');
 
 const app = express();
 
-// --- THIS IS THE FIX ---
-// Define the list of allowed frontend URLs
+// --- FINAL, BEST-PRACTICE CORS CONFIGURATION ---
+// This list now reads the production URL from an environment variable.
 const allowedOrigins = [
-  'http://localhost:3000', // For your local development
-  'https://oralvis-healthcare-nine.vercel.app' // Your live frontend URL
+  'http://localhost:3000', // For local development
+  process.env.FRONTEND_URL  // For the live Vercel deployment
 ];
 
-// Configure CORS to only allow requests from your specified frontend URLs
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
     if (!origin) return callback(null, true);
-    
-    // If the origin is in our allowed list, allow the request
     if (allowedOrigins.indexOf(origin) === -1) {
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
       return callback(new Error(msg), false);
