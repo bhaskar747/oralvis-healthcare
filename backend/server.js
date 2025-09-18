@@ -6,23 +6,39 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-
 const app = express();
 
+// --- THIS IS THE FIX ---
+// Define the list of allowed frontend URLs
+const allowedOrigins = [
+  'http://localhost:3000', // For your local development
+  'https://oralvis-healthcare-nine.vercel.app' // Your live frontend URL
+];
 
-app.use(cors());
+// Configure CORS to only allow requests from your specified frontend URLs
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    if (!origin) return callback(null, true);
+    
+    // If the origin is in our allowed list, allow the request
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
+
 app.use(express.json());
-
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected successfully'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-
+// API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/submissions', require('./routes/submissions'));
-
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
